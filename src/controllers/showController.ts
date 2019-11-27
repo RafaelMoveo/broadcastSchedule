@@ -25,7 +25,9 @@ class ShowController {
         } 
         const newShow = new Show(req.body);
         await newShow.save((error: Error, show: MongooseDocument) => {
-            error? res.send(error) : ChannelController.addShowToChannel(show, channel, res);
+            error? res.send(error) : '';
+
+            channel? ChannelController.addShowToChannel(show, channel, res): res.send({ message: "Show added without a channel", show: show});
         });
     }
     
