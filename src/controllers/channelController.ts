@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { Channel } from '../models/channelModel';
+import { MongooseDocument } from 'mongoose';
 
 class ChannelController {
 
-    getChannelShows(req: Request, res: Response){
+    public getChannelShows(req: Request, res: Response){
         /** I hope there is a better way to get 
          * Israel timezone ISO  */
         //Set the given time or get the current time
@@ -46,6 +47,51 @@ class ChannelController {
                 channelShows: channelShows
             }
             res.send(response)
+        });
+    }
+
+    public addShowToChannel(newShow: MongooseDocument, channelNum: string, res: Response){
+        const channelNumber = parseInt(channelNum);
+        Channel
+        .aggregate([
+            { $match:   { number : channelNumber }},
+            { $unwind:  "$shows" },
+            { $lookup : {
+                    from: "shows",
+                    localField: "shows.show",
+                    foreignField: "_id",
+                    as: "shows.showDetails"
+                }
+            },
+            { $sort : { "shows.start_time": 1 }}
+        ])
+        .exec( async (error: Error, channelShows: any) => {
+            if(error){
+                console.log(error);
+                res.send(error);
+            }else{
+                //Get last show aired
+                const lastShow          = channelShows[channelShows.length - 1];
+                const lastShowStartTime = lastShow.shows.start_time;
+                const lastShowDetails   = lastShow.shows.showDetails[0];
+                //Set new show starting time by adding to the last show start time the show length in minutes 
+                const newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
+
+                //Add the new show to the channel
+                const newShowInChannel  = {
+                    start_time: newShowStartTime,
+                    show: newShow._id
+                }
+                try{
+                    await Channel.findOneAndUpdate(
+                            { number : channelNumber },
+                            { $push  : { shows: newShowInChannel }}
+                        );
+                    res.send(newShow);
+                }catch(error){
+                    console.log(error);
+                }
+            }
         });
     }
 }

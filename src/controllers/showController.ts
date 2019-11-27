@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { MongooseDocument } from 'mongoose';
 import { Show } from '../models/showModel';
+import ChannelController from '../controllers/channelController';
 
 class ShowController {
 
@@ -13,16 +14,22 @@ class ShowController {
             });
     }
 
-    createNewShow(req: Request, res: Response){
+    public async createNewShow(req: Request, res: Response){
         //Set the json array to object array if exit
         if(req.body.categories) req.body.categories = JSON.parse(req.body.categories);
+        //Channel object
+        let channel = '';
+        if(req.body.channel){
+            channel = req.body.channel;
+            delete req.body.channel;
+        } 
         const newShow = new Show(req.body);
-        newShow.save((error: Error, show: MongooseDocument) => {
-            error? res.send(error) : res.json(show);
+        await newShow.save((error: Error, show: MongooseDocument) => {
+            error? res.send(error) : ChannelController.addShowToChannel(show, channel, res);
         });
     }
     
-    filteredShows(req: Request, res: Response){
+    public filteredShows(req: Request, res: Response){
         let matchConditions   = [];
         let aggregatePipeline = [];
 
@@ -79,7 +86,7 @@ class ShowController {
         });
     }
 
-    updateShow(req: Request, res: Response){
+    public updateShow(req: Request, res: Response){
         const showId = req.body.id;
 
         const updateOptions = {
