@@ -11,8 +11,7 @@ class ChannelController {
         const globalTime  = new Date();
         const currentTime = globalTime.getTime() + (2*60*60*1000);
         const time        = req.body.time? new Date(req.body.time) : new Date(currentTime);
-
-        const num  = parseInt(req.body.channelNum);
+        const num         = parseInt(req.body.channelNum);
 
         let aggregatePipeline = [];
         aggregatePipeline = [
@@ -29,13 +28,11 @@ class ChannelController {
             },
             { $sort : { "shows.start_time": 1 }}
         ];
-
         // Add the skip option to the pipeline according to the offset
         // to enable pagination 
         const skip   = req.body.skip? +req.body.skip : 0;
         const offset = req.body.offset? +req.body.offset : 0;
         aggregatePipeline.push({ $skip: skip + offset });
-
         //Add limit to pipeline
         (req.body.limit)? aggregatePipeline.push({ $limit: skip + parseInt(req.body.limit) }) : '';
 
@@ -76,7 +73,6 @@ class ChannelController {
                 const lastShowDetails   = lastShow.shows.showDetails[0];
                 //Set new show starting time by adding to the last show start time the show length in minutes 
                 const newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
-
                 //Add the new show to the channel
                 const newShowInChannel  = {
                     start_time: newShowStartTime,
