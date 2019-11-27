@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { MongooseDocument } from 'mongoose';
 import { Channel } from '../models/channelModel';
 
 class ChannelController {
@@ -8,18 +7,18 @@ class ChannelController {
         /** I hope there is a better way to get 
          * Israel timezone ISO  */
         //Set the given time or get the current time
-        const globalTime = new Date();
+        const globalTime  = new Date();
         const currentTime = globalTime.getTime() + (2*60*60*1000);
-        const time = req.body.time? new Date(req.body.time) : new Date(currentTime);
+        const time        = req.body.time? new Date(req.body.time) : new Date(currentTime);
 
         const num  = parseInt(req.body.channelNum);
 
         let aggregatePipeline = [];
         aggregatePipeline = [
-            { $match: { number : num }},
-            { $unwind: "$shows" },
+            { $match:   { number : num }},
+            { $unwind:  "$shows" },
             { $project: { shows: 1, _id: 0 }},
-            { $match : { "shows.start_time": { "$gte": time }}},
+            { $match :  { "shows.start_time": { "$gte": time }}},
             { $lookup : {
                     from: "shows",
                     localField: "shows.show",
@@ -32,7 +31,7 @@ class ChannelController {
 
         // Add the skip option to the pipeline according to the offset
         // to enable pagination 
-        const skip = req.body.skip? +req.body.skip : 0;
+        const skip   = req.body.skip? +req.body.skip : 0;
         const offset = req.body.offset? +req.body.offset : 0;
         aggregatePipeline.push({ $skip: skip + offset });
 

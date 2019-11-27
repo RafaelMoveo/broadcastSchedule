@@ -59,7 +59,7 @@ class ShowController {
         
         // Add the skip option to the pipeline according to the offset
         // to enable pagination 
-        const skip = req.body.skip? +req.body.skip : 0;
+        const skip   = req.body.skip? +req.body.skip : 0;
         const offset = req.body.offset? +req.body.offset : 0;
         aggregatePipeline.push({ $skip: skip + offset });
 
