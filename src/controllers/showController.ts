@@ -14,19 +14,15 @@ class ShowController {
     }
 
     createNewShow(req: Request, res: Response){
-
         //Set the json array to object array if exit
         if(req.body.categories) req.body.categories = JSON.parse(req.body.categories);
-
         const newShow = new Show(req.body);
-        const aaaa = newShow.save((error: Error, show: MongooseDocument) => {
+        newShow.save((error: Error, show: MongooseDocument) => {
             error? res.send(error) : res.json(show);
         });
-        console.log(aaaa);
     }
     
     filteredShows(req: Request, res: Response){
-        console.log(req.body);
         let matchConditions   = [];
         let aggregatePipeline = [];
 
