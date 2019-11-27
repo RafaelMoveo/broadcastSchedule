@@ -5,10 +5,15 @@ import { Channel } from '../models/channelModel';
 class ChannelController {
 
     getChannelShows(req: Request, res: Response){
-        //Set the given time or get the current tume
-        const time = req.body.time? new Date(req.body.time) : new Date();
+        /** I hope there is a better way to get 
+         * Israel timezone ISO  */
+        //Set the given time or get the current time
+        const globalTime = new Date();
+        const currentTime = globalTime.getTime() + (2*60*60*1000);
+        const time = req.body.time? new Date(req.body.time) : new Date(currentTime);
+
         const num  = parseInt(req.body.channelNum);
-        
+
         let aggregatePipeline = [];
         aggregatePipeline = [
             { $match: { number : num }},
