@@ -68,12 +68,21 @@ class ChannelController {
                 res.send(error);
             }else{
                 //Get last show aired
-                const lastShow          = channelShows[channelShows.length - 1];
-                const lastShowStartTime = lastShow.shows.start_time;
-                const lastShowDetails   = lastShow.shows.showDetails[0];
-                //Set new show starting time by adding to the last show start time the show length in minutes 
-                const newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
-                //Add the new show to the channel
+                let lastShow: any;
+                let lastShowStartTime: Date;
+                let lastShowDetails: any;
+                let newShowStartTime: Date;
+                if( channelShows.length != 0 ){
+                    lastShow          = channelShows[channelShows.length - 1];
+                    lastShowStartTime = lastShow.shows.start_time;
+                    lastShowDetails   = lastShow.shows.showDetails[0];
+                    newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
+                }else{
+                    const globalTime = new Date();
+                    newShowStartTime = new Date(globalTime.getTime() + (2*60*60*1000));
+                }
+                // Set new show starting time by adding to the last show start time the show length in minutes 
+                // Add the new show to the channel
                 const newShowInChannel  = {
                     start_time: newShowStartTime,
                     show: newShow._id
