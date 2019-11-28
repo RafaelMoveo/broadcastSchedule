@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Channel } from '../models/channelModel';
+import Channel,{IChannel} from '../models/channelModel';
 import { MongooseDocument } from 'mongoose';
 
 class ChannelController {
@@ -62,7 +62,7 @@ class ChannelController {
             },
             { $sort : { "shows.start_time": 1 }}
         ])
-        .exec( async (error: Error, channelShows: any) => {
+        .exec( async (error: Error, channelShows: [IChannel]) => {
             if(error){
                 console.log(error);
                 res.send(error);
@@ -72,7 +72,8 @@ class ChannelController {
                 let lastShowStartTime: Date;
                 let lastShowDetails: any;
                 let newShowStartTime: Date;
-                if( channelShows.length != 0 ){
+                //Check if there is shoes in the channel
+                if(channelShows.length){
                     lastShow          = channelShows[channelShows.length - 1];
                     lastShowStartTime = lastShow.shows.start_time;
                     lastShowDetails   = lastShow.shows.showDetails[0];

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { MongooseDocument } from 'mongoose';
-import { Show } from '../models/showModel';
+import Show,{IShow} from '../models/showModel';
 import ChannelController from '../controllers/channelController';
 
 class ShowController {
@@ -67,9 +67,9 @@ class ShowController {
         aggregatePipeline.push({ $skip: skip + offset });
         //Add limit to pipeline
         (req.body.limit)? aggregatePipeline.push({ $limit: skip + parseInt(req.body.limit) }) : '';
-        const shows = Show
+        Show
         .aggregate(aggregatePipeline)
-        .exec((error: Error, shows:any) => {
+        .exec((error: Error, shows:[IShow]) => {
             error? res.send(error): '';
             const response = {
                 offset: shows.length + offset,
