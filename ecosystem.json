@@ -10,7 +10,7 @@
     ],
     "deploy": {
         "development": {
-        "key": "~/.ssh/id_rsa.pub",
+        "key": ".ssh/id_rsa.pub",
         "user": "ubuntu",
         "host": ["ec2-34-243-116-137.eu-west-1.compute.amazonaws.com"],
         "ref": "origin/master",
