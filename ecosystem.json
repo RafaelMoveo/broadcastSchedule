@@ -1,0 +1,27 @@
+{
+    "apps": [
+        {
+        "name": "broadcastSchedule",
+        "script": "./bin/www",
+        "env": {
+            "NODE_ENV": "development"
+        }
+        }
+    ],
+    "deploy": {
+        "development": {
+        "key": "~/.ssh/id_rsa.pub",
+        "user": "ubuntu",
+        "host": ["ec2-34-243-116-137.eu-west-1.compute.amazonaws.com"],
+        "ref": "origin/master",
+        "repo": "https://github.com/RafaelMoveo/broadcastSchedule.git",
+        "path": "/home/ubuntu/broadcast",
+        "ssh_options": "StrictHostKeyChecking=no",
+        // Commands to be executed on the server after the repo has been cloned
+        "post-deploy": "cp ~/.env . && npm install && mkdir -p logs && pm2 startOrRestart ecosystem.json --env {{env}}&& pm2 save",
+        "env": {
+            "NODE_ENV": "{{env}}"
+        }
+        }
+    }
+}

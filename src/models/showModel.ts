@@ -8,7 +8,7 @@ export interface IShow extends Document {
     categories: [string];
     family_friendly: boolean;
     age_limit: number;
-  }
+}
 
 const showSchema = new mongoose.Schema({
     name:             {type: String, required:['The name of the show is missing']},
