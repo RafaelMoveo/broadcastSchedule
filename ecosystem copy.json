@@ -10,9 +10,9 @@
     ],
     "deploy": {
         "development": {
-        "key": ".ssh/Ubuntu18.pem",
+        "key": ".ssh/ThisIsMyNewKey.pem",
         "user": "ubuntu",
-        "host": ["ec2-34-250-136-101.eu-west-1.compute.amazonaws.com"],
+        "host": ["ec2-34-243-116-137.eu-west-1.compute.amazonaws.com"],
         "ref": "origin/master",
         "repo": "https://github.com/RafaelMoveo/broadcastSchedule.git",
         "path": "/home/ubuntu/broadcast",
