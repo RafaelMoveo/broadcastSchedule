@@ -2,7 +2,7 @@
     "apps": [
         {
         "name": "broadcastSchedule",
-        "script": "./bin/www",
+        "script": "src/index.ts",
         "env": {
             "NODE_ENV": "development"
         }
