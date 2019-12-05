@@ -15,7 +15,6 @@ class ShowController {
     }
 
     public async createNewShow(req: Request, res: Response){
-        res.send('hi');
         //Set the json array to object array if exit
         if(req.body.categories) req.body.categories = JSON.parse(req.body.categories);
         //Channel object
