@@ -64,7 +64,6 @@ class ChannelController {
         ])
         .exec( async (error: Error, channelShows: [IChannel]) => {
             if(error){
-                console.log(error);
                 res.send(error);
             }else{
                 //Get last show aired
@@ -95,7 +94,7 @@ class ChannelController {
                         );
                     res.send(newShow);
                 }catch(error){
-                    console.log(error);
+                    res.send(error);
                 }
             }
         });
