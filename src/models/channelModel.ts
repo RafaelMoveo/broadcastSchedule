@@ -1,14 +1,14 @@
 import * as mongoose from 'mongoose';
-import { Document } from 'mongoose';
-import { IShow } from './showModel';
+// import { Document } from 'mongoose';
+// import { IShow } from './showModel';
 
 const Schema = mongoose.Schema;
 
-export interface IChannel extends Document {
-    name:   string;
-    number: number;
-    shows: [{ start_time: Date, show: IShow['_id'] }];
-}
+// export interface IChannel extends Document {
+//     name:   string;
+//     number: number;
+//     shows: [{ start_time: Date, show: IShow['_id'] }];
+// }
 
 const channelSchema = new Schema({
     name:   {type: String, unique: true, required:['The name of the channel is missing']},
@@ -21,4 +21,5 @@ const channelSchema = new Schema({
             ],
 });
 
-export default mongoose.model<IChannel>('Channel', channelSchema );
+export default mongoose.model('Channel', channelSchema );
+// export default mongoose.model<IChannel>('Channel', channelSchema );

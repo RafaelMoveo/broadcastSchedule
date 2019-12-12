@@ -1,20 +1,22 @@
-import { Request, Response } from 'express';
-import { MongooseDocument } from 'mongoose';
-import Show,{IShow} from '../models/showModel';
+import { Request, Response,NextFunction } from 'express';
+import Show from '../models/showModel';
 import ChannelController from '../controllers/channelController';
 
 class ShowController {
 
-    public getShowById(req: Request, res: Response){
-        Show.findById( 
-            req.params.showId,
-            'name length description categories family_friendly age_limit',
-            (error: Error, show: MongooseDocument) => {
-                error? res.send(error) : res.json(show);
-            });
+    public async getShowById(req: Request, res: Response){
+        try{
+            const show = await Show.findById(req.params.showId,'name length description categories family_friendly age_limit');
+            res.status(200).json(show)
+        } catch(error){
+            res.status(500).send(error)
+        }
     }
 
-    public async createNewShow(req: Request, res: Response){
+    
+
+
+    public async createNewShow(req: Request, res: Response, next: NextFunction){
         //Set the json array to object array if exit
         if(req.body.categories) req.body.categories = JSON.parse(req.body.categories);
         //Channel object
@@ -24,14 +26,17 @@ class ShowController {
             delete req.body.channel;
         } 
         const newShow = new Show(req.body);
-        await newShow.save((error: Error, show: MongooseDocument) => {
-            error? res.send(error) : '';
-
-            channel? ChannelController.addShowToChannel(show, channel, res): res.send({ message: "Show added without a channel", show: show});
-        });
+        try {
+            const show = await newShow.save();
+            ChannelController.addShowToChannel(show, channel, res);
+        } catch (error) {
+            next(error);
+        }
     }
     
-    public filteredShows(req: Request, res: Response){
+
+
+    public async filteredShows(req: Request, res: Response){
         let matchConditions   = [];
         let aggregatePipeline = [];
         //Add age limit to the match conditions array  
@@ -67,17 +72,19 @@ class ShowController {
         aggregatePipeline.push({ $skip: skip + offset });
         //Add limit to pipeline
         (req.body.limit)? aggregatePipeline.push({ $limit: skip + parseInt(req.body.limit) }) : '';
-        Show
-        .aggregate(aggregatePipeline)
-        .exec((error: Error, shows:[IShow]) => {
-            error? res.send(error): '';
-            const response = {
+        
+        try{
+            const shows = Show.aggregate(aggregatePipeline).exec();
+            res.status(200).send({
                 offset: shows.length + offset,
                 shows: shows
-            }
-            res.send(response)
-        });
+            })
+        } catch(error){
+            res.status(200).send(error);
+        }
     }
+
+
 
     public updateShow(req: Request, res: Response){
         const showId = req.body.id;
@@ -95,4 +102,5 @@ class ShowController {
         });
     }
 }
+
 export default new ShowController

@@ -7,12 +7,12 @@ const showsRoutes = Router();
 showsRoutes.get('/:showId', ShowController.getShowById );
 
 //Filter shows 
-showsRoutes.post('/', ShowController.filteredShows );
+showsRoutes.post('/filtered', ShowController.filteredShows );
 
 //Create new show
-showsRoutes.post('/create', ShowController.createNewShow );
+showsRoutes.post('/', ShowController.createNewShow );
 
 //Update existing show
-showsRoutes.post('/update', ShowController.updateShow );
+showsRoutes.put('/', ShowController.updateShow );
 
 export { showsRoutes };

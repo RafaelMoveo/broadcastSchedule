@@ -1,14 +1,13 @@
 import * as mongoose from 'mongoose';
-import { Document } from 'mongoose';
 
-export interface IShow extends Document {
-    name: string;
-    length: number;
-    description: string;
-    categories: [string];
-    family_friendly: boolean;
-    age_limit: number;
-}
+// export interface IShow extends Document {
+//     name: string;
+//     length: number;
+//     description: string;
+//     categories: [string];
+//     family_friendly: boolean;
+//     age_limit: number;
+// }
 
 const showSchema = new mongoose.Schema({
     name:             {type: String, required:['The name of the show is missing']},
@@ -20,4 +19,5 @@ const showSchema = new mongoose.Schema({
 });
 
 //Creating show modal
-export default mongoose.model<IShow>('Show', showSchema );
+export default mongoose.model('Show', showSchema );
+// export default mongoose.model<IShow>('Show', showSchema );

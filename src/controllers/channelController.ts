@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import Channel,{IChannel} from '../models/channelModel';
+import Channel from '../models/channelModel';
 import { MongooseDocument } from 'mongoose';
 
 class ChannelController {
 
-    public getChannelShows(req: Request, res: Response){
+    public async getChannelShows(req: Request, res: Response){
         /** I hope there is a better way to get 
          * Israel timezone ISO  */
         //Set the given time or get the current time
@@ -36,68 +36,113 @@ class ChannelController {
         //Add limit to pipeline
         (req.body.limit)? aggregatePipeline.push({ $limit: skip + parseInt(req.body.limit) }) : '';
 
-        Channel.aggregate(aggregatePipeline)
-        .exec((error: Error, channelShows: any) => {
-            error? res.send(error): '';
-            const response = {
+        try{
+            const channelShows = await Channel.aggregate(aggregatePipeline).exec();
+            res.status(200).send({
                 offset: channelShows.length + offset,
                 channelShows: channelShows
-            }
-            res.send(response)
-        });
+            });
+        } catch ( error ){
+            res.status(500).send({error: error});
+        }
     }
 
-    public addShowToChannel(newShow: MongooseDocument, channelNum: string, res: Response){
+    public async addShowToChannel(newShow: MongooseDocument, channelNum: string, res: Response){
         const channelNumber = parseInt(channelNum);
-        Channel
-        .aggregate([
-            { $match:   { number : channelNumber }},
-            { $unwind:  "$shows" },
-            { $lookup : {
-                    from: "shows",
-                    localField: "shows.show",
-                    foreignField: "_id",
-                    as: "shows.showDetails"
-                }
-            },
-            { $sort : { "shows.start_time": 1 }}
-        ])
-        .exec( async (error: Error, channelShows: [IChannel]) => {
-            if(error){
-                res.send(error);
+        try{
+            const channelShows = await Channel.aggregate([
+                { $match:   { number : channelNumber }},
+                { $unwind:  "$shows" },
+                { $lookup : {
+                        from: "shows",
+                        localField: "shows.show",
+                        foreignField: "_id",
+                        as: "shows.showDetails"
+                    }
+                },
+                { $sort : { "shows.start_time": 1 }}
+            ]).exec();
+
+            //Get last show aired
+            let lastShow: any;
+            let lastShowStartTime: Date;
+            let lastShowDetails: any;
+            let newShowStartTime: Date;
+            //Check if there is shows in the channel
+            if(channelShows.length){
+                lastShow          = channelShows[channelShows.length - 1];
+                lastShowStartTime = lastShow.shows.start_time;
+                lastShowDetails   = lastShow.shows.showDetails[0];
+                newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
             }else{
-                //Get last show aired
-                let lastShow: any;
-                let lastShowStartTime: Date;
-                let lastShowDetails: any;
-                let newShowStartTime: Date;
-                //Check if there is shoes in the channel
-                if(channelShows.length){
-                    lastShow          = channelShows[channelShows.length - 1];
-                    lastShowStartTime = lastShow.shows.start_time;
-                    lastShowDetails   = lastShow.shows.showDetails[0];
-                    newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
-                }else{
-                    const globalTime = new Date();
-                    newShowStartTime = new Date(globalTime.getTime() + (2*60*60*1000));
-                }
-                // Set new show starting time by adding to the last show start time the show length in minutes 
-                // Add the new show to the channel
-                const newShowInChannel  = {
-                    start_time: newShowStartTime,
-                    show: newShow._id
-                }
-                try{
-                    await Channel.findOneAndUpdate(
-                            { number : channelNumber },
-                            { $push  : { shows: newShowInChannel }}
-                        );
-                    res.send(newShow);
-                }catch(error){
-                    res.send(error);
-                }
+                const globalTime = new Date();
+                newShowStartTime = new Date(globalTime.getTime() + (2*60*60*1000));
             }
-        });
+            // Set new show starting time by adding to the last show start time the show length in minutes 
+            // Add the new show to the channel
+            const newShowInChannel  = {
+                start_time: newShowStartTime,
+                show: newShow._id
+            }
+
+            await Channel.findOneAndUpdate(
+                    { number : channelNumber },
+                    { $push  : { shows: newShowInChannel }}
+                );
+            res.status(201).send(newShow);
+
+        } catch(error){
+            res.status(400).send({error: error});
+        }
+        // Channel
+        // .aggregate([
+        //     { $match:   { number : channelNumber }},
+        //     { $unwind:  "$shows" },
+        //     { $lookup : {
+        //             from: "shows",
+        //             localField: "shows.show",
+        //             foreignField: "_id",
+        //             as: "shows.showDetails"
+        //         }
+        //     },
+        //     { $sort : { "shows.start_time": 1 }}
+        // ])
+        // .exec( async (error: Error, channelShows: IChannel[]) => {
+        //     if(error){
+        //         res.send(error);
+        //     }else{
+        //         //Get last show aired
+        //         let lastShow: any;
+        //         let lastShowStartTime: Date;
+        //         let lastShowDetails: any;
+        //         let newShowStartTime: Date;
+        //         //Check if there is shoes in the channel
+        //         if(channelShows.length){
+        //             lastShow          = channelShows[channelShows.length - 1];
+        //             lastShowStartTime = lastShow.shows.start_time;
+        //             lastShowDetails   = lastShow.shows.showDetails[0];
+        //             newShowStartTime  = new Date(lastShowStartTime.setMinutes(lastShowStartTime.getMinutes() + (lastShowDetails.length * 60)));
+        //         }else{
+        //             const globalTime = new Date();
+        //             newShowStartTime = new Date(globalTime.getTime() + (2*60*60*1000));
+        //         }
+        //         // Set new show starting time by adding to the last show start time the show length in minutes 
+        //         // Add the new show to the channel
+        //         const newShowInChannel  = {
+        //             start_time: newShowStartTime,
+        //             show: newShow._id
+        //         }
+        //         try{
+        //             await Channel.findOneAndUpdate(
+        //                     { number : channelNumber },
+        //                     { $push  : { shows: newShowInChannel }}
+        //                 );
+        //             res.send(newShow);
+        //         }catch(error){
+        //             res.send(error);
+        //         }
+        //     }
+        // });
     }
 }
 export default new ChannelController
