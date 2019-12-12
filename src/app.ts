@@ -3,6 +3,8 @@ import * as bodyParser from 'body-parser';
 import { showsRoutes } from './routes/showRoutes';
 import { channelRoutes } from './routes/channelRoutes';
 import './config/dbConfig';
+import ShowController from './controllers/showController';
+import ChannelController from './controllers/channelController';
 
 class App {
     public instance : express.Application;
@@ -14,8 +16,8 @@ class App {
 
     private appInit() {
         this.parsTheRequests();
-        this.instance.use('/show', showsRoutes);
-        this.instance.use('/channel', channelRoutes);
+        this.instance.use('/show', ShowController.router);
+        this.instance.use('/channel', ChannelController.router);
     }
     
     private parsTheRequests(){

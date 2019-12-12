@@ -1,8 +1,25 @@
-import { Request, Response,NextFunction } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import Show from '../models/showModel';
 import ChannelController from '../controllers/channelController';
 
 class ShowController {
+    public router = Router();
+
+    constructor(){
+        //Get show by id
+        this.router.get('/:showId', this.getShowById );
+
+        //Filter shows 
+        this.router.post('/filtered', this.filteredShows );
+
+        //Create new show
+        this.router.post('/', this.createNewShow );
+
+        //Update existing show
+        this.router.put('/', this.updateShow );
+    }
+
+
 
     public async getShowById(req: Request, res: Response){
         try{
@@ -34,8 +51,8 @@ class ShowController {
         }
     }
     
-
-
+    
+    
     public async filteredShows(req: Request, res: Response){
         let matchConditions   = [];
         let aggregatePipeline = [];
@@ -72,15 +89,14 @@ class ShowController {
         aggregatePipeline.push({ $skip: skip + offset });
         //Add limit to pipeline
         (req.body.limit)? aggregatePipeline.push({ $limit: skip + parseInt(req.body.limit) }) : '';
-        
         try{
-            const shows = Show.aggregate(aggregatePipeline).exec();
+            const shows = await Show.aggregate(aggregatePipeline).exec();
             res.status(200).send({
                 offset: shows.length + offset,
                 shows: shows
             })
         } catch(error){
-            res.status(200).send(error);
+            res.status(400).send(error);
         }
     }
 

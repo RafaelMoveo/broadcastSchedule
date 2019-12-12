@@ -1,8 +1,14 @@
-import { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import Channel from '../models/channelModel';
 import { MongooseDocument } from 'mongoose';
 
 class ChannelController {
+
+    public router = Router();
+
+    constructor(){
+        this.router.post('/', this.getChannelShows);
+    }
 
     public async getChannelShows(req: Request, res: Response){
         /** I hope there is a better way to get 
