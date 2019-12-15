@@ -1,7 +1,5 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import { showsRoutes } from './routes/showRoutes';
-import { channelRoutes } from './routes/channelRoutes';
 import './config/dbConfig';
 import ShowController from './controllers/showController';
 import ChannelController from './controllers/channelController';
